@@ -1,10 +1,12 @@
 package main
 
 import (
+	"io"
+
 	"github.com/goadesign/goa"
 	"github.com/goadesign/gorma-cellar/app"
+	"github.com/goadesign/gorma-cellar/models"
 	"golang.org/x/net/websocket"
-	"io"
 )
 
 // BottleController implements the bottle resource.
@@ -19,8 +21,23 @@ func NewBottleController(service *goa.Service) *BottleController {
 
 // Create runs the create action.
 func (c *BottleController) Create(ctx *app.CreateBottleContext) error {
-	// TBD: implement
-	return nil
+	b := models.Bottle{}
+	b.AccountID = ctx.AccountID
+	b.Color = ctx.Payload.Color
+	b.Country = ctx.Payload.Country
+	b.Name = ctx.Payload.Name
+	b.Region = ctx.Payload.Region
+	b.Review = ctx.Payload.Review
+	b.Sweetness = ctx.Payload.Sweetness
+	b.Varietal = ctx.Payload.Varietal
+	b.Vineyard = ctx.Payload.Vineyard
+	b.Vintage = ctx.Payload.Vintage
+	err := bdb.Add(ctx.Context, &b)
+	if err != nil {
+		return ErrDatabaseError(err)
+	}
+	ctx.ResponseData.Header().Set("Location", app.BottleHref(b.AccountID, b.ID))
+	return ctx.Created()
 }
 
 // Delete runs the delete action.
