@@ -55,9 +55,8 @@ func bottleDBFilterByAccount(accountID int) *models.BottleDB {
 
 // List runs the list action.
 func (c *BottleController) List(ctx *app.ListBottleContext) error {
-	// TBD: implement
-	res := app.BottleCollection{}
-	return ctx.OK(res)
+	bottles := bdb.ListBottle(ctx.Context, ctx.AccountID)
+	return ctx.OK(bottles)
 }
 
 // Rate runs the rate action.
