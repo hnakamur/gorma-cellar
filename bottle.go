@@ -42,8 +42,11 @@ func (c *BottleController) Create(ctx *app.CreateBottleContext) error {
 
 // Delete runs the delete action.
 func (c *BottleController) Delete(ctx *app.DeleteBottleContext) error {
-	// TBD: implement
-	return nil
+	err := bdb.Delete(ctx.Context, ctx.BottleID)
+	if err != nil {
+		return ErrDatabaseError(err)
+	}
+	return ctx.NoContent()
 }
 
 // List runs the list action.
