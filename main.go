@@ -41,6 +41,7 @@ func main() {
 	// Setup middleware
 	service.Use(middleware.RequestID())
 	service.Use(middleware.LogRequest(true))
+	service.Use(middleware.ErrorHandler(service, true))
 	service.Use(middleware.Recover())
 
 	// Mount "account" controller
