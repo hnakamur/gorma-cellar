@@ -43,15 +43,17 @@ func (c *BottleController) Create(ctx *app.CreateBottleContext) error {
 
 // Delete runs the delete action.
 func (c *BottleController) Delete(ctx *app.DeleteBottleContext) error {
-	err := bottleDBFilterByAccount(ctx.AccountID).Delete(ctx.Context, ctx.BottleID)
+	b, err := bdb.Get(ctx.Context, ctx.BottleID)
+	if err == gorm.ErrRecordNotFound || (err == nil && b.AccountID != ctx.AccountID) {
+		return ctx.NotFound()
+	} else if err != nil {
+		return ErrDatabaseError(err)
+	}
+	err = bdb.Delete(ctx.Context, ctx.BottleID)
 	if err != nil {
 		return ErrDatabaseError(err)
 	}
 	return ctx.NoContent()
-}
-
-func bottleDBFilterByAccount(accountID int) *models.BottleDB {
-	return models.NewBottleDB(bdb.Db.Scopes(models.BottleFilterByAccount(accountID, bdb.Db)))
 }
 
 // List runs the list action.
