@@ -6,6 +6,7 @@ import (
 	"github.com/goadesign/goa"
 	"github.com/goadesign/gorma-cellar/app"
 	"github.com/goadesign/gorma-cellar/models"
+	"github.com/jinzhu/gorm"
 	"golang.org/x/net/websocket"
 )
 
@@ -67,9 +68,14 @@ func (c *BottleController) Rate(ctx *app.RateBottleContext) error {
 
 // Show runs the show action.
 func (c *BottleController) Show(ctx *app.ShowBottleContext) error {
-	// TBD: implement
-	res := &app.Bottle{}
-	return ctx.OK(res)
+	bottle, err := bdb.OneBottleFull(ctx.Context, ctx.BottleID, ctx.AccountID)
+	if err == gorm.ErrRecordNotFound {
+		return ctx.NotFound()
+	} else if err != nil {
+		return ErrDatabaseError(err)
+	}
+	bottle.Href = app.BottleHref(ctx.AccountID, ctx.BottleID)
+	return ctx.OKFull(bottle)
 }
 
 // Update runs the update action.
