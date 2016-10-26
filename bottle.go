@@ -62,8 +62,18 @@ func (c *BottleController) List(ctx *app.ListBottleContext) error {
 
 // Rate runs the rate action.
 func (c *BottleController) Rate(ctx *app.RateBottleContext) error {
-	// TBD: implement
-	return nil
+	b, err := bdb.Get(ctx.Context, ctx.BottleID)
+	if err == gorm.ErrRecordNotFound || (err == nil && b.AccountID != ctx.AccountID) {
+		return ctx.NotFound()
+	} else if err != nil {
+		return ErrDatabaseError(err)
+	}
+	b.Rating = ctx.Payload.Rating
+	err = bdb.Update(ctx, b)
+	if err != nil {
+		return ErrDatabaseError(err)
+	}
+	return ctx.NoContent()
 }
 
 // Show runs the show action.
