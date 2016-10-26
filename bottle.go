@@ -80,8 +80,36 @@ func (c *BottleController) Show(ctx *app.ShowBottleContext) error {
 
 // Update runs the update action.
 func (c *BottleController) Update(ctx *app.UpdateBottleContext) error {
-	// TBD: implement
-	return nil
+	b, err := bdb.Get(ctx.Context, ctx.BottleID)
+	if err == gorm.ErrRecordNotFound || (err == nil && b.AccountID != ctx.AccountID) {
+		return ctx.NotFound()
+	} else if err != nil {
+		return ErrDatabaseError(err)
+	}
+	if ctx.Payload.Color != nil {
+		b.Color = *ctx.Payload.Color
+	}
+	b.Country = ctx.Payload.Country
+	if ctx.Payload.Name != nil {
+		b.Name = *ctx.Payload.Name
+	}
+	b.Region = ctx.Payload.Region
+	b.Review = ctx.Payload.Review
+	b.Sweetness = ctx.Payload.Sweetness
+	if ctx.Payload.Varietal != nil {
+		b.Varietal = *ctx.Payload.Varietal
+	}
+	if ctx.Payload.Vineyard != nil {
+		b.Vineyard = *ctx.Payload.Vineyard
+	}
+	if ctx.Payload.Vintage != nil {
+		b.Vintage = *ctx.Payload.Vintage
+	}
+	err = bdb.Update(ctx, b)
+	if err != nil {
+		return ErrDatabaseError(err)
+	}
+	return ctx.NoContent()
 }
 
 // Watch runs the watch action.
